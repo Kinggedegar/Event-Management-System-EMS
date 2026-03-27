@@ -3,10 +3,11 @@ import { z } from 'zod';
 
 export const validate = (schema) => (req, res, next) => {
     try {
-        schema.parse(req.body);
+        const result = schema.parse(req.body);
+        // Replace req.body with the parsed/coerced result (e.g. trimmed strings, defaults applied)
+        req.body = result;
         next();
     } catch (e) {
-        // Improved error formatting: return first validation error message
         const firstError = e.errors?.[0];
         const message = firstError
             ? `${firstError.path.join('.')}: ${firstError.message}`
@@ -14,7 +15,7 @@ export const validate = (schema) => (req, res, next) => {
 
         const err = new Error(message);
         err.statusCode = 400;
-        err.details = e.errors; // optional: for more detailed frontend feedback
+        err.details = e.errors;
         next(err);
     }
 };
@@ -32,22 +33,25 @@ export const schemas = {
                 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
             ),
         role: z
-            .enum(['user', 'admin', 'superadmin', 'attendee', 'organizer'], {
-                required_error: 'Role is required',
-                invalid_type_error: 'Role must be one of: user, admin, superadmin, attendee, organizer'
-            })
+            .enum(['user', 'admin', 'superadmin', 'attendee', 'organizer'])
             .optional()
-            .default('user'),
+            .default('attendee'),                       // FIX: default to 'attendee' not 'user'
         organizationName: z.string().min(1).max(150).optional(),
-        organizationWebsite: z.string().url().optional(),
+        organizationWebsite: z
+            .string()
+            .optional()
+            .transform(val => val === '' ? undefined : val)  // FIX: empty string → undefined
+            .pipe(z.string().url().optional()),
         organizationPhone: z.string().min(3).max(30).optional(),
         organizationDescription: z.string().max(500).optional()
-    }).strict(), // prevent unknown fields
+        // FIX: removed .strict() — frontend may send extra fields during registration
+    }),
 
     login: z.object({
         email: z.string().email('Invalid email format').trim(),
         password: z.string().min(1, 'Password is required')
-    }).strict(),
+        // FIX: removed .strict() — safer without it
+    }),
 
     purchase: z.object({
         eventId: z
@@ -59,8 +63,24 @@ export const schemas = {
     updateProfile: z.object({
         name: z.string().max(100).optional(),
         email: z.string().email('Invalid email format').trim().optional(),
-        phone: z.string().max(30).optional()
-    }).strict(),
+        phone: z.string().max(30).optional(),
+        // FIX: allow all profile fields the ProfilePage sends
+        username: z.string().max(50).optional(),
+        dob: z.string().optional(),
+        gender: z.string().optional(),
+        city: z.string().max(100).optional(),
+        country: z.string().max(100).optional(),
+        bio: z.string().max(280).optional(),
+        website: z
+            .string()
+            .optional()
+            .transform(val => val === '' ? undefined : val)
+            .pipe(z.string().url().optional()),
+        twitter: z.string().max(100).optional(),
+        linkedin: z.string().max(200).optional(),
+        avatar_url: z.string().optional()
+        // FIX: removed .strict() — ProfilePage sends many fields
+    }),
 
     changePassword: z.object({
         currentPassword: z.string().min(1, 'Current password is required'),

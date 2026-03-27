@@ -105,20 +105,13 @@ const categoryIconColors = [
 <template>
   <div class="bg-gray-950 min-h-screen">
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- HERO SECTION                              -->
-    <!-- ══════════════════════════════════════════ -->
+    <!-- HERO SECTION -->
     <section class="relative min-h-screen flex items-center overflow-hidden pt-20">
-
-      <!-- Animated mesh gradient background -->
       <div class="absolute inset-0">
         <div class="absolute inset-0 bg-gray-950"></div>
-        <!-- Gradient orbs -->
         <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-violet-600/15 rounded-full blur-[120px] animate-pulse"></div>
         <div class="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[100px]" style="animation: pulse 4s ease-in-out infinite; animation-delay: 1s;"></div>
         <div class="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-violet-800/10 rounded-full blur-[80px]" style="animation: pulse 6s ease-in-out infinite; animation-delay: 2s;"></div>
-
-        <!-- Subtle dot grid -->
         <div class="absolute inset-0 opacity-[0.03]"
           style="background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 40px 40px;"></div>
       </div>
@@ -128,7 +121,6 @@ const categoryIconColors = [
 
           <!-- Left: Headline + Search -->
           <div>
-            <!-- Badge -->
             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/20 bg-violet-500/5 mb-8">
               <div class="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse"></div>
               <span class="text-xs font-medium text-violet-300 tracking-wide">500+ events live now</span>
@@ -147,7 +139,6 @@ const categoryIconColors = [
             <!-- Search bar -->
             <div class="relative rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-2 shadow-[0_20px_60px_rgba(0,0,0,0.4)] mb-8">
               <div class="flex gap-2">
-                <!-- Search input -->
                 <div class="flex-1 flex items-center gap-3 px-4">
                   <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -159,9 +150,7 @@ const categoryIconColors = [
                     class="flex-1 bg-transparent text-sm text-white placeholder-gray-600 outline-none py-2"
                   />
                 </div>
-                <!-- Divider -->
                 <div class="w-px bg-white/8 my-2"></div>
-                <!-- Category select -->
                 <div class="flex items-center gap-2 px-4">
                   <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
@@ -171,7 +160,6 @@ const categoryIconColors = [
                     <option v-for="cat in eventsStore.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                   </select>
                 </div>
-                <!-- Search button -->
                 <RouterLink
                   :to="`/events?q=${searchQuery}&category=${selectedCategory}`"
                   class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-sm font-semibold rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-violet-500/20 whitespace-nowrap"
@@ -196,10 +184,9 @@ const categoryIconColors = [
 
           <!-- Right: Floating glass cards -->
           <div class="hidden lg:block relative h-[520px]">
-            <!-- Central glow -->
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-violet-600/10 rounded-full blur-3xl"></div>
 
-            <!-- Card 1 - top left -->
+            <!-- Card 1 -->
             <div class="absolute top-0 left-0 w-64 rounded-2xl border border-white/8 bg-gray-900/70 backdrop-blur-xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.5)]" style="animation: float 6s ease-in-out infinite;">
               <div class="h-32 rounded-xl overflow-hidden mb-3 bg-gradient-to-br from-violet-600/30 to-indigo-600/30">
                 <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=200&fit=crop" class="w-full h-full object-cover opacity-60" alt="" />
@@ -217,7 +204,7 @@ const categoryIconColors = [
               </div>
             </div>
 
-            <!-- Card 2 - center right -->
+            <!-- Card 2 -->
             <div class="absolute top-24 right-0 w-60 rounded-2xl border border-white/8 bg-gray-900/70 backdrop-blur-xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.5)]" style="animation: float 8s ease-in-out infinite; animation-delay: 1s;">
               <div class="h-28 rounded-xl overflow-hidden mb-3 bg-gradient-to-br from-pink-600/30 to-rose-600/30">
                 <img src="https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?w=400&h=200&fit=crop" class="w-full h-full object-cover opacity-60" alt="" />
@@ -230,7 +217,7 @@ const categoryIconColors = [
               <p class="text-[11px] text-gray-500 mt-1">840 spots left</p>
             </div>
 
-            <!-- Card 3 - bottom center -->
+            <!-- Card 3 -->
             <div class="absolute bottom-0 left-20 w-56 rounded-2xl border border-white/8 bg-gray-900/70 backdrop-blur-xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.5)]" style="animation: float 7s ease-in-out infinite; animation-delay: 2s;">
               <div class="flex items-center gap-3 mb-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center">
@@ -260,11 +247,8 @@ const categoryIconColors = [
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- FEATURED EVENTS                           -->
-    <!-- ══════════════════════════════════════════ -->
+    <!-- FEATURED EVENTS -->
     <section class="relative py-24 overflow-hidden">
-      <!-- Section separator -->
       <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent"></div>
 
       <div class="max-w-7xl mx-auto px-6">
@@ -291,31 +275,21 @@ const categoryIconColors = [
           <p class="text-gray-600">No featured events at the moment</p>
         </div>
 
-        <!-- Featured event cards: large format -->
         <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div v-for="(event, idx) in eventsStore.featuredEvents.slice(0, 3)" :key="event.id"
             :class="idx === 0 ? 'lg:col-span-2 lg:row-span-1' : ''"
             class="group relative rounded-2xl overflow-hidden border border-white/5 bg-gray-900/50 hover:border-white/15 transition-all duration-500 shadow-[0_4px_24px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.5)] hover:scale-[1.01] cursor-pointer"
           >
-            <!-- Event image -->
             <div :class="idx === 0 ? 'h-72' : 'h-48'" class="relative overflow-hidden">
-              <img
-                v-if="event.image"
-                :src="event.image"
-                :alt="event.title"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
+              <img v-if="event.image" :src="event.image" :alt="event.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
               <div v-else class="w-full h-full bg-gradient-to-br from-violet-900/50 to-indigo-900/50"></div>
-              <!-- Dark gradient overlay -->
               <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/20 to-transparent"></div>
-              <!-- Badges -->
               <div class="absolute top-4 left-4 flex gap-2">
                 <span v-if="event.is_featured" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-500/30 text-violet-200 border border-violet-500/30 backdrop-blur-sm">Featured</span>
                 <span v-if="event.is_free" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/30 text-emerald-200 border border-emerald-500/30 backdrop-blur-sm">Free</span>
               </div>
             </div>
 
-            <!-- Glass footer -->
             <div class="p-5 backdrop-blur-sm">
               <div class="flex items-center gap-2 mb-2">
                 <span class="text-xs font-medium text-violet-400 bg-violet-500/10 border border-violet-500/15 px-2 py-0.5 rounded-full">{{ event.category?.name || 'Event' }}</span>
@@ -340,12 +314,9 @@ const categoryIconColors = [
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- CATEGORIES                                -->
-    <!-- ══════════════════════════════════════════ -->
+    <!-- CATEGORIES SECTION -->
     <section class="relative py-24 overflow-hidden">
       <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent"></div>
-      <!-- Background glow -->
       <div class="absolute inset-0 pointer-events-none">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-indigo-600/5 rounded-full blur-3xl"></div>
       </div>
@@ -373,9 +344,7 @@ const categoryIconColors = [
             class="group relative rounded-2xl border p-5 hover:scale-[1.03] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)] overflow-hidden cursor-pointer"
             :class="`bg-gradient-to-br ${categoryGradients[idx % categoryGradients.length]}`"
           >
-            <!-- Hover glow -->
             <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/2"></div>
-
             <div class="relative">
               <div class="w-11 h-11 rounded-xl mb-4 flex items-center justify-center bg-white/5 group-hover:bg-white/10 transition-colors duration-300">
                 <svg class="w-5 h-5 transition-transform duration-300 group-hover:scale-110" :class="categoryIconColors[idx % categoryIconColors.length]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -390,9 +359,7 @@ const categoryIconColors = [
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- UPCOMING EVENTS                           -->
-    <!-- ══════════════════════════════════════════ -->
+    <!-- UPCOMING EVENTS -->
     <section class="relative py-24 overflow-hidden">
       <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent"></div>
 
@@ -421,12 +388,8 @@ const categoryIconColors = [
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div
-            v-for="event in eventsStore.upcomingEvents"
-            :key="event.id"
-            class="group rounded-2xl border border-white/5 bg-gray-900/40 hover:border-white/12 hover:bg-gray-900/60 overflow-hidden transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.01]"
-          >
-            <!-- Image -->
+          <div v-for="event in eventsStore.upcomingEvents" :key="event.id"
+            class="group rounded-2xl border border-white/5 bg-gray-900/40 hover:border-white/12 hover:bg-gray-900/60 overflow-hidden transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.01]">
             <div class="relative h-44 overflow-hidden">
               <img v-if="event.image" :src="event.image" :alt="event.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
               <div v-else class="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900"></div>
@@ -435,8 +398,6 @@ const categoryIconColors = [
                 <span v-if="event.is_free" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/25 text-emerald-300 border border-emerald-500/25 backdrop-blur-sm">FREE</span>
               </div>
             </div>
-
-            <!-- Content -->
             <div class="p-4">
               <div class="flex items-center gap-2 mb-2">
                 <span class="text-[10px] font-medium text-indigo-400">{{ event.category?.name }}</span>
@@ -468,9 +429,7 @@ const categoryIconColors = [
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- PAST / HOSTED EVENTS                      -->
-    <!-- ══════════════════════════════════════════ -->
+    <!-- PAST EVENTS -->
     <section class="relative py-24 overflow-hidden">
       <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent"></div>
 
@@ -487,11 +446,8 @@ const categoryIconColors = [
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div
-            v-for="event in pastEvents"
-            :key="event.id"
-            class="group rounded-2xl border border-white/5 bg-gray-900/30 overflow-hidden transition-all duration-300 hover:border-white/10 hover:scale-[1.01] opacity-75 hover:opacity-100"
-          >
+          <div v-for="event in pastEvents" :key="event.id"
+            class="group rounded-2xl border border-white/5 bg-gray-900/30 overflow-hidden transition-all duration-300 hover:border-white/10 hover:scale-[1.01] opacity-75 hover:opacity-100">
             <div class="relative h-44 overflow-hidden">
               <img :src="event.image" :alt="event.title" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
               <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent"></div>
@@ -520,24 +476,19 @@ const categoryIconColors = [
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════════ -->
-    <!-- CTA SECTION                               -->
-    <!-- ══════════════════════════════════════════ -->
+    <!-- CTA SECTION WITH PLANNERS BUTTON -->
     <section class="relative py-24 overflow-hidden">
       <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent"></div>
 
-      <!-- Animated gradient background -->
       <div class="absolute inset-0">
         <div class="absolute inset-0 bg-gradient-to-br from-violet-950/60 via-gray-950 to-indigo-950/60"></div>
         <div class="absolute top-0 left-1/3 w-96 h-96 bg-violet-600/15 rounded-full blur-3xl"></div>
         <div class="absolute bottom-0 right-1/3 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl"></div>
-        <!-- Dot grid -->
         <div class="absolute inset-0 opacity-[0.025]"
           style="background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 32px 32px;"></div>
       </div>
 
       <div class="relative max-w-4xl mx-auto px-6 text-center">
-        <!-- Animated border ring -->
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/25 bg-violet-500/5 backdrop-blur-sm mb-8">
           <div class="w-1.5 h-1.5 rounded-full bg-violet-400"></div>
           <span class="text-xs font-semibold text-violet-300">Join 200+ organizers</span>
@@ -552,14 +503,21 @@ const categoryIconColors = [
         </p>
 
         <div class="flex flex-col sm:flex-row justify-center gap-4">
-          <!-- Glowing primary button -->
           <RouterLink to="/auth/register"
-            class="relative inline-flex items-center gap-2 px-8 py-3.5 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-[0_0_40px_rgba(139,92,246,0.4)] hover:shadow-[0_0_60px_rgba(139,92,246,0.6)] transition-all duration-300 hover:scale-[1.03]"
-          >
-            <!-- Animated border -->
+            class="relative inline-flex items-center gap-2 px-8 py-3.5 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-[0_0_40px_rgba(139,92,246,0.4)] hover:shadow-[0_0_60px_rgba(139,92,246,0.6)] transition-all duration-300 hover:scale-[1.03]">
             <span class="absolute inset-0 rounded-xl border border-white/20"></span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
             Get Started Free
+          </RouterLink>
+
+          <!-- Professional Planners Button -->
+          <RouterLink 
+            to="/organizer/planners"
+            class="group inline-flex items-center gap-3 px-8 py-3.5 text-sm font-semibold text-white rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-violet-500/40 transition-all duration-300 hover:scale-[1.02]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Find Professional Planners
           </RouterLink>
 
           <RouterLink to="/events"
@@ -569,7 +527,6 @@ const categoryIconColors = [
           </RouterLink>
         </div>
 
-        <!-- Trust indicators -->
         <div class="flex flex-wrap justify-center gap-6 mt-12">
           <div class="flex items-center gap-2 text-sm text-gray-600">
             <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
@@ -577,7 +534,7 @@ const categoryIconColors = [
           </div>
           <div class="flex items-center gap-2 text-sm text-gray-600">
             <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
-            Free plan availabl
+            Free plan available
           </div>
           <div class="flex items-center gap-2 text-sm text-gray-600">
             <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>

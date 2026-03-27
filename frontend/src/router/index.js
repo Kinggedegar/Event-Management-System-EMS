@@ -37,6 +37,11 @@ import AdminCategories from '../pages/admin/CategoriesPage.vue'
 import AdminReviews from '../pages/admin/ReviewsPage.vue'
 import AdminPayments from '../pages/admin/PaymentsPage.vue'
 
+// New: Event Planners Page
+import EventPlanners from '../pages/EventPlanners.vue'
+
+import EventAttendees from '../pages/organizer/EventAttendeesPage.vue'
+
 
 const routes = [
   // Public routes
@@ -86,6 +91,13 @@ const routes = [
       { path: 'events/:id/edit', name: 'organizer-edit-event', component: OrganizerEditEvent },
       { path: 'events/:id/attendees', name: 'organizer-event-attendees', component: OrganizerEventAttendees },
       { path: 'scanner', name: 'organizer-scanner', component: OrganizerScanner },
+      
+      // New Route - Recommended Event Planners
+      { 
+        path: 'planners', 
+        name: 'organizer-planners', 
+        component: EventPlanners 
+      },
     ]
   },
   
