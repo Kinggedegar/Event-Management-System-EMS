@@ -1,68 +1,102 @@
-// stores/auth.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '../services/api'
 
+// Centralized role definitions to avoid magic strings
+const ROLES = {
+  ADMIN: 'admin',
+  SUPER: 'superadmin',
+  ORGANIZER: 'organizer',
+  ATTENDEE: 'attendee'
+}
+
 export const useAuthStore = defineStore('auth', () => {
+  // --- State ---
   const user = ref(null)
-  const token = ref(null)
+  const token = ref(localStorage.getItem('token') || null)
   const loading = ref(false)
   const error = ref(null)
 
+  // --- Getters ---
   const isAuthenticated = computed(() => !!token.value && !!user.value)
+  
+  const userRole = computed(() => user.value?.role || null)
 
-  const isAdmin = computed(() =>
-    ['admin', 'superadmin'].includes(user.value?.role)
+  const isAdmin = computed(() => 
+    [ROLES.ADMIN, ROLES.SUPER].includes(userRole.value)
   )
 
-  const isOrganizer = computed(() =>
-    ['organizer', 'admin', 'superadmin'].includes(user.value?.role)
+  const isOrganizer = computed(() => 
+    [ROLES.ORGANIZER, ROLES.ADMIN, ROLES.SUPER].includes(userRole.value)
   )
 
-  function extractError(err, fallback) {
-    const data = err.response?.data
-    if (!data) return fallback
-    if (data.error?.message) return data.error.message
-    if (typeof data.error === 'string') return data.error
-    if (data.message) return data.message
-    if (Array.isArray(data.errors) && data.errors[0]?.message) return data.errors[0].message
-    return fallback
+  // --- Private Helpers ---
+  const _handleError = (err, fallback) => {
+    const message = err.response?.data?.error?.message || 
+                    err.response?.data?.message || 
+                    err.response?.data?.error || 
+                    fallback
+    error.value = message
+    return message
   }
 
+  const _syncHeaders = (authToken) => {
+    if (authToken) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
+    } else {
+      delete api.defaults.headers.common['Authorization']
+    }
+  }
+
+  // --- Actions ---
+
+  /**
+   * Updates state, storage, and axios headers in one atomic operation
+   */
   function setAuth(authToken, authUser) {
     token.value = authToken
     user.value = authUser
 
-    localStorage.setItem('token', authToken)
-    localStorage.setItem('user', JSON.stringify(authUser))
-
-    api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
+    if (authToken) {
+      localStorage.setItem('token', authToken)
+      localStorage.setItem('user', JSON.stringify(authUser))
+    }
+    _syncHeaders(authToken)
   }
 
-  function clearAuth() {
+  /**
+   * Resets the store and cleans sensitive data
+   */
+  function logout() {
     token.value = null
     user.value = null
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    delete api.defaults.headers.common['Authorization']
+    _syncHeaders(null)
+    // Optional: router.push('/login') or window.location.href = '/'
   }
 
-  function initAuth() {
+  /**
+   * Hydrates the store from LocalStorage and validates the session
+   */
+  async function initAuth() {
     const savedToken = localStorage.getItem('token')
     const savedUser = localStorage.getItem('user')
 
-    if (savedToken) {
+    if (!savedToken) return
+
+    // 1. Set local data immediately for responsive UI
+    try {
       token.value = savedToken
-      api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+      _syncHeaders(savedToken)
+      if (savedUser) user.value = JSON.parse(savedUser)
+    } catch (e) {
+      return logout()
     }
 
-    if (savedUser) {
-      try {
-        user.value = JSON.parse(savedUser)
-      } catch {
-        localStorage.removeItem('user')
-      }
-    }
+    // 2. Background check: Re-validate session with server
+    // This prevents "Zombie" sessions where the token is expired but still in LocalStorage
+    await fetchUser()
   }
 
   async function login(email, password) {
@@ -70,73 +104,71 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      const response = await api.post('/auth/login', { email, password })
-      setAuth(response.data.token, response.data.user)
-      return response.data
+      const { data } = await api.post('/auth/login', { email, password })
+      setAuth(data.token, data.user)
+      return data
     } catch (err) {
-      error.value = extractError(err, 'Login failed. Please check your credentials.')
+      _handleError(err, 'Authentication failed. Check your credentials.')
       throw err
     } finally {
       loading.value = false
     }
   }
 
-  async function register(data) {
+  async function register(registrationData) {
     loading.value = true
     error.value = null
 
     try {
+      // Clean empty values
       const payload = Object.fromEntries(
-        Object.entries(data).filter(([, v]) => v !== undefined && v !== '')
+        Object.entries(registrationData).filter(([_, v]) => v != null && v !== '')
       )
 
-      const response = await api.post('/auth/register', payload)
-      setAuth(response.data.token, response.data.user)
-      return response.data
+      const { data } = await api.post('/auth/register', payload)
+      setAuth(data.token, data.user)
+      return data
     } catch (err) {
-      error.value = extractError(err, 'Registration failed. Please try again.')
+      _handleError(err, 'Identity deployment failed. Please try again.')
       throw err
     } finally {
       loading.value = false
     }
   }
 
+  /**
+   * Fetches fresh user data. If 401, automatically logs out.
+   */
   async function fetchUser() {
     if (!token.value) return null
+    _syncHeaders(token.value)
 
     try {
-      const response = await api.get('/auth/me')
-      const freshUser = response.data
-
-      user.value = freshUser
-      localStorage.setItem('user', JSON.stringify(freshUser))
-
-      return freshUser
-    } catch {
-      clearAuth()
+      const { data } = await api.get('/auth/me')
+      user.value = data
+      localStorage.setItem('user', JSON.stringify(data))
+      return data
+    } catch (err) {
+      // Only logout if the error is an Auth failure (401/403)
+      if (err.response?.status === 401) {
+        logout()
+      }
       return null
     }
   }
 
-  async function updateProfile(data) {
+  async function updateProfile(profileData) {
     loading.value = true
     error.value = null
 
     try {
-      const payload = Object.fromEntries(
-        Object.entries(data).filter(([, v]) => v !== undefined && v !== '')
-      )
-
-      const response = await api.put('/auth/profile', payload)
-
-      const updatedUser = response.data.user || response.data
+      const { data } = await api.put('/auth/profile', profileData)
+      const updatedUser = data.user || data
       user.value = updatedUser
-
       localStorage.setItem('user', JSON.stringify(updatedUser))
-
       return updatedUser
     } catch (err) {
-      error.value = extractError(err, 'Profile update failed.')
+      _handleError(err, 'System synchronization failed.')
       throw err
     } finally {
       loading.value = false
@@ -151,25 +183,25 @@ export const useAuthStore = defineStore('auth', () => {
       await api.put('/auth/password', { currentPassword, newPassword })
       return true
     } catch (err) {
-      error.value = extractError(err, 'Password change failed.')
+      _handleError(err, 'Cipher update failed.')
       throw err
     } finally {
       loading.value = false
     }
   }
 
-  function logout() {
-    clearAuth()
-  }
-
   return {
+    // State
     user,
     token,
     loading,
     error,
+    // Getters
     isAuthenticated,
     isAdmin,
     isOrganizer,
+    userRole,
+    // Actions
     initAuth,
     login,
     register,

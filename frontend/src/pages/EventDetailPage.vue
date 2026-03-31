@@ -1,3 +1,246 @@
+<template>
+  <div class="min-h-screen bg-[#050505] text-white relative font-sans overflow-x-hidden">
+    
+    <!-- Global Decorative Elements -->
+    <div class="pointer-events-none fixed inset-0 z-0 opacity-[0.03]" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+    <div class="absolute top-0 right-0 w-[800px] h-[600px] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
+    <div v-if="loading" class="flex items-center justify-center min-h-screen">
+      <LoadingSpinner size="lg" />
+    </div>
+    
+    <div v-else-if="error && !event" class="flex flex-col items-center justify-center min-h-screen px-6 text-center">
+      <h1 class="text-4xl font-black text-white mb-6 uppercase tracking-tighter">{{ error }}</h1>
+      <RouterLink to="/events" class="px-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest hover:scale-105 transition-all">Return to Catalog</RouterLink>
+    </div>
+    
+    <template v-else-if="event">
+      <!-- ================= IMMERSIVE HERO ================= -->
+      <div class="relative h-[50vh] md:h-[65vh] w-full overflow-hidden">
+        <img 
+          v-if="event.image"
+          :src="event.image" 
+          :alt="event.title"
+          class="w-full h-full object-cover scale-105 blur-[2px] opacity-40 transition-transform duration-1000 group-hover:scale-100"
+        >
+        <div v-else class="w-full h-full bg-gradient-to-br from-zinc-900 to-black"></div>
+        
+        <!-- Overlays -->
+        <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent"></div>
+        <div class="absolute inset-0 bg-black/20"></div>
+
+        <!-- Content Overlay -->
+        <div class="absolute bottom-0 left-0 w-full p-6 md:p-12 lg:p-20 z-10">
+          <div class="max-w-[90rem] mx-auto">
+            <div class="flex flex-wrap items-center gap-3 mb-6">
+              <span v-if="event.category_name" class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-violet-500/40 bg-violet-500/10 text-violet-400 backdrop-blur-md">
+                {{ event.category_name }}
+              </span>
+              <span v-if="event.featured" class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-amber-500/40 bg-amber-500/10 text-amber-400 backdrop-blur-md">
+                Featured Entry
+              </span>
+            </div>
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-[0.9] max-w-4xl">
+              {{ event.title }}
+            </h1>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ================= MAIN SECTION ================= -->
+      <div class="relative z-10 max-w-[90rem] mx-auto px-6 md:px-12 lg:px-20 -mt-10 pb-24">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          <!-- LEFT: DOSSIER CONTENT -->
+          <div class="lg:col-span-8 space-y-12">
+            
+            <!-- Quick Info Bar -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-8 bg-white/[0.03] border border-white/10 rounded-[2.5rem] backdrop-blur-xl">
+              <div>
+                <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Date</p>
+                <p class="text-sm font-bold text-white">{{ formattedDate }}</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Schedule</p>
+                <p class="text-sm font-bold text-white">{{ event.time }} <span v-if="event.end_time" class="text-zinc-500">- {{ event.end_time }}</span></p>
+              </div>
+              <div>
+                <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Location</p>
+                <p class="text-sm font-bold text-white truncate">{{ event.location }}</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Capacity</p>
+                <p class="text-sm font-bold text-white">{{ event.registration_count || 0 }} Registered</p>
+              </div>
+            </div>
+
+            <!-- Detailed Description -->
+            <div class="space-y-6 px-4">
+              <h2 class="text-sm font-black text-zinc-500 uppercase tracking-[0.4em]">Event Description</h2>
+              <div class="text-lg text-zinc-300 leading-relaxed font-medium whitespace-pre-wrap prose prose-invert max-w-none">
+                {{ event.description }}
+              </div>
+            </div>
+
+            <!-- Organizer Profile -->
+            <div class="p-8 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+              <h2 class="text-sm font-black text-zinc-500 uppercase tracking-[0.4em] mb-8">Authorized Organizer</h2>
+              <div class="flex items-center gap-6">
+                <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 p-[2px]">
+                   <div class="w-full h-full rounded-full bg-[#050505] flex items-center justify-center">
+                      <span class="text-2xl font-black text-white">{{ event.organizer_name?.[0]?.toUpperCase() }}</span>
+                   </div>
+                </div>
+                <div>
+                  <p class="text-2xl font-black text-white tracking-tight">{{ event.organizer_name }}</p>
+                  <p class="text-zinc-500 font-medium italic mt-1">{{ event.organizer_bio || 'Verified Platform Organizer' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: ACTION CONSOLE -->
+          <div class="lg:col-span-4 lg:sticky lg:top-32 h-fit">
+            <div class="bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-8 shadow-2xl overflow-hidden relative group">
+              
+              <!-- Glow Accent -->
+              <div class="absolute -top-24 -right-24 w-48 h-48 bg-violet-600/20 blur-[60px] rounded-full pointer-events-none group-hover:opacity-40 transition-opacity"></div>
+
+              <!-- Content -->
+              <div v-if="isRegistered" class="text-center py-6">
+                <div class="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(16,185,129,0.1)]">
+                  <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <h3 class="text-2xl font-black text-white mb-2">Access Granted</h3>
+                <p class="text-zinc-500 font-medium mb-8">Ticket: {{ event.userRegistration.ticket_name }}</p>
+                <RouterLink to="/dashboard/tickets" class="block w-full py-4 bg-white text-black rounded-2xl font-black uppercase text-xs tracking-widest hover:scale-105 transition-all">
+                  View Entry Pass
+                </RouterLink>
+              </div>
+
+              <template v-else>
+                <h3 class="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-6">Select Access Tier</h3>
+                
+                <div v-if="availableTickets.length === 0" class="text-center py-10">
+                  <p class="text-zinc-500 font-bold italic">All entries exhausted.</p>
+                </div>
+                
+                <div v-else class="space-y-3 mb-8">
+                  <button
+                    v-for="ticket in availableTickets"
+                    :key="ticket.id"
+                    @click="selectTicket(ticket)"
+                    :class="[
+                      'w-full p-5 border transition-all duration-300 rounded-[1.5rem] text-left group/tier relative overflow-hidden',
+                      selectedTicket?.id === ticket.id 
+                        ? 'border-violet-500 bg-violet-500/5' 
+                        : 'border-white/10 bg-white/[0.02] hover:border-white/30'
+                    ]"
+                  >
+                    <div v-if="selectedTicket?.id === ticket.id" class="absolute left-0 top-0 bottom-0 w-1 bg-violet-500"></div>
+                    <div class="flex justify-between items-center relative z-10">
+                      <div>
+                        <p class="font-black text-white group-hover/tier:text-violet-400 transition-colors uppercase text-xs tracking-widest">{{ ticket.name }}</p>
+                        <p class="text-[10px] text-zinc-500 mt-1 font-bold">{{ ticket.available }} Units Remaining</p>
+                      </div>
+                      <p class="text-xl font-black text-white">
+                        {{ ticket.price === 0 ? 'FREE' : `$${ticket.price}` }}
+                      </p>
+                    </div>
+                  </button>
+                </div>
+                
+                <!-- Quantity & Total -->
+                <div v-if="selectedTicket" class="space-y-6 mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div class="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl border border-white/5">
+                    <span class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Quantity</span>
+                    <div class="flex items-center gap-4">
+                      <button @click="quantity = Math.max(1, quantity - 1)" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>
+                      </button>
+                      <span class="text-lg font-black w-6 text-center">{{ quantity }}</span>
+                      <button @click="quantity = Math.min(selectedTicket.max_per_order || 10, selectedTicket.available, quantity + 1)" class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-between items-center py-4 border-t border-white/10">
+                    <span class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Subtotal</span>
+                    <span class="text-3xl font-black text-white">
+                      {{ selectedTicket.price === 0 ? 'FREE' : `$${(selectedTicket.price * quantity).toFixed(2)}` }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Error Feed -->
+                <Transition name="fade">
+                  <div v-if="error" class="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-xs font-bold uppercase tracking-widest text-center">
+                    {{ error }}
+                  </div>
+                </Transition>
+                
+                <!-- Main Action Button -->
+                <button 
+                  @click="handleRegister"
+                  :disabled="registering || !selectedTicket"
+                  class="group/btn w-full py-5 rounded-2xl bg-white text-black font-black uppercase text-xs tracking-[0.2em] shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                >
+                  <LoadingSpinner v-if="registering" size="sm" color="black" />
+                  <span>{{ authStore.isAuthenticated ? 'Secure Reservation' : 'Login to Continue' }}</span>
+                  <svg v-if="!registering" class="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+    
+    <!-- ================= PAYMENT & SUCCESS MODAL ================= -->
+    <Transition name="modal">
+      <div v-if="showRegistrationModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-xl" @click="showRegistrationModal = false"></div>
+        <div class="relative bg-[#0a0a0a] border border-white/10 rounded-[3rem] p-10 max-w-md w-full shadow-[0_0_100px_rgba(0,0,0,0.8)] text-center">
+          
+          <div class="w-24 h-24 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-[0_0_50px_rgba(16,185,129,0.2)]">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+          </div>
+          
+          <h3 class="text-3xl font-black text-white mb-3 tracking-tighter uppercase">Order Logged</h3>
+          <p class="text-zinc-500 font-medium mb-10 leading-relaxed">
+            {{ registrationSuccess?.total_amount > 0 
+              ? 'Finalize transaction to authorize your digital entry pass.' 
+              : 'Reservation confirmed. Access details have been synced to your profile.' 
+            }}
+          </p>
+          
+          <div v-if="registrationSuccess?.total_amount > 0" class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl mb-8">
+               <span class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Total Liability</span>
+               <span class="text-2xl font-black text-white">${{ registrationSuccess.total_amount.toFixed(2) }}</span>
+            </div>
+            
+            <button @click="processPayment" :disabled="registering" class="w-full py-5 bg-emerald-500 text-black rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-emerald-400 transition-all flex items-center justify-center gap-2">
+              <LoadingSpinner v-if="registering" size="sm" color="black" />
+              Authorize Payment
+            </button>
+          </div>
+          
+          <RouterLink v-else to="/dashboard/tickets" class="block w-full py-5 bg-white text-black rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-zinc-200 transition-all">
+            Access Dashboard
+          </RouterLink>
+          
+          <button @click="showRegistrationModal = false" class="mt-4 text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] hover:text-white transition-colors">
+            Close Terminal
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </div>
+</template>
+
 <script setup>
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
@@ -27,7 +270,7 @@ onMounted(async () => {
   try {
     await eventsStore.fetchEvent(route.params.id)
   } catch (err) {
-    error.value = 'Event not found'
+    error.value = 'Data Access Failure: Event Not Found'
   } finally {
     loading.value = false
   }
@@ -36,23 +279,10 @@ onMounted(async () => {
 const formattedDate = computed(() => {
   if (!event.value?.date) return ''
   try {
-    return format(new Date(event.value.date), 'EEEE, MMMM d, yyyy')
+    return format(new Date(event.value.date), 'MMMM dd, yyyy')
   } catch {
     return event.value.date
   }
-})
-
-const formattedEndDate = computed(() => {
-  if (!event.value?.end_date) return ''
-  try {
-    return format(new Date(event.value.end_date), 'EEEE, MMMM d, yyyy')
-  } catch {
-    return event.value.end_date
-  }
-})
-
-const isMultiDay = computed(() => {
-  return event.value?.end_date && event.value.end_date !== event.value.date
 })
 
 const availableTickets = computed(() => {
@@ -68,6 +298,7 @@ const isRegistered = computed(() => !!event.value?.userRegistration)
 function selectTicket(ticket) {
   selectedTicket.value = ticket
   quantity.value = 1
+  error.value = null
 }
 
 async function handleRegister() {
@@ -77,7 +308,7 @@ async function handleRegister() {
   }
   
   if (!selectedTicket.value) {
-    error.value = 'Please select a ticket type'
+    error.value = 'Selection Required: Choose an Access Tier'
     return
   }
   
@@ -93,11 +324,9 @@ async function handleRegister() {
     
     registrationSuccess.value = result
     showRegistrationModal.value = true
-    
-    // Refresh event to update registration status
     await eventsStore.fetchEvent(route.params.id)
   } catch (err) {
-    error.value = err.response?.data?.error?.message || 'Registration failed'
+    error.value = err.response?.data?.error?.message || 'Handshake Failure: Registration Declined'
   } finally {
     registering.value = false
   }
@@ -105,287 +334,24 @@ async function handleRegister() {
 
 async function processPayment() {
   if (!registrationSuccess.value) return
-  
   registering.value = true
   error.value = null
-  
   try {
     await registrationsStore.processPayment(registrationSuccess.value.id)
     showRegistrationModal.value = false
     router.push('/dashboard/tickets')
   } catch (err) {
-    error.value = err.response?.data?.error?.message || 'Payment failed'
+    error.value = 'Gateway Error: Authorization Failed'
   } finally {
     registering.value = false
   }
 }
 </script>
 
-<template>
-  <div class="min-h-screen bg-gray-50">
-    <div v-if="loading" class="flex items-center justify-center py-32">
-      <LoadingSpinner size="lg" />
-    </div>
-    
-    <div v-else-if="error && !event" class="container-custom py-16 text-center">
-      <h1 class="text-2xl font-bold text-gray-900 mb-4">{{ error }}</h1>
-      <RouterLink to="/events" class="btn btn-primary">Browse Events</RouterLink>
-    </div>
-    
-    <template v-else-if="event">
-      <!-- Hero -->
-      <div class="relative h-64 md:h-96 bg-gray-900">
-        <img 
-          v-if="event.image"
-          :src="event.image" 
-          :alt="event.title"
-          class="w-full h-full object-cover opacity-60"
-        >
-        <div 
-          v-else 
-          class="w-full h-full bg-gradient-to-br from-primary-600 to-primary-800"
-        ></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
-      </div>
-      
-      <div class="container-custom -mt-32 relative z-10 pb-16">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <!-- Main Content -->
-          <div class="lg:col-span-2">
-            <div class="card p-6 md:p-8">
-              <!-- Category & Status -->
-              <div class="flex items-center gap-3 mb-4">
-                <span 
-                  v-if="event.category_name"
-                  class="badge text-white"
-                  :style="{ backgroundColor: event.category_color || '#3b82f6' }"
-                >
-                  {{ event.category_name }}
-                </span>
-                <span v-if="event.featured" class="badge badge-warning">Featured</span>
-              </div>
-              
-              <!-- Title -->
-              <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                {{ event.title }}
-              </h1>
-              
-              <!-- Date & Time -->
-              <div class="flex items-start gap-3 mb-4">
-                <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <p class="font-medium text-gray-900">{{ formattedDate }}</p>
-                  <p v-if="isMultiDay" class="text-gray-600">to {{ formattedEndDate }}</p>
-                  <p class="text-gray-600">
-                    {{ event.time }}
-                    <span v-if="event.end_time"> - {{ event.end_time }}</span>
-                  </p>
-                </div>
-              </div>
-              
-              <!-- Location -->
-              <div class="flex items-start gap-3 mb-6">
-                <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p class="font-medium text-gray-900">{{ event.location }}</p>
-                  <p v-if="event.address" class="text-gray-600">{{ event.address }}</p>
-                  <p v-if="event.city" class="text-gray-600">{{ event.city }}</p>
-                </div>
-              </div>
-              
-              <!-- Description -->
-              <div class="border-t border-gray-200 pt-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">About This Event</h2>
-                <div class="prose prose-gray max-w-none">
-                  <p class="whitespace-pre-wrap text-gray-600 leading-relaxed">{{ event.description }}</p>
-                </div>
-              </div>
-              
-              <!-- Organizer -->
-              <div class="border-t border-gray-200 pt-6 mt-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Organizer</h2>
-                <div class="flex items-center gap-4">
-                  <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                    <span class="text-primary-700 font-semibold">
-                      {{ event.organizer_name?.[0]?.toUpperCase() || 'O' }}
-                    </span>
-                  </div>
-                  <div>
-                    <p class="font-medium text-gray-900">{{ event.organizer_name }}</p>
-                    <p v-if="event.organizer_bio" class="text-sm text-gray-500 line-clamp-1">{{ event.organizer_bio }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Sidebar -->
-          <div class="lg:col-span-1">
-            <div class="card p-6 sticky top-24">
-              <!-- Already registered -->
-              <div v-if="isRegistered" class="text-center">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">You're Registered!</h3>
-                <p class="text-gray-600 mb-4">{{ event.userRegistration.ticket_name }}</p>
-                <RouterLink to="/dashboard/tickets" class="btn btn-primary w-full">
-                  View Your Tickets
-                </RouterLink>
-              </div>
-              
-              <!-- Registration form -->
-              <template v-else>
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Select Tickets</h3>
-                
-                <div v-if="availableTickets.length === 0" class="text-center py-4">
-                  <p class="text-gray-500">No tickets available</p>
-                </div>
-                
-                <div v-else class="space-y-3 mb-6">
-                  <button
-                    v-for="ticket in availableTickets"
-                    :key="ticket.id"
-                    @click="selectTicket(ticket)"
-                    :class="[
-                      'w-full p-4 border-2 rounded-lg text-left transition-colors',
-                      selectedTicket?.id === ticket.id 
-                        ? 'border-primary-500 bg-primary-50' 
-                        : 'border-gray-200 hover:border-primary-300'
-                    ]"
-                  >
-                    <div class="flex justify-between items-start">
-                      <div>
-                        <p class="font-medium text-gray-900">{{ ticket.name }}</p>
-                        <p class="text-sm text-gray-500">{{ ticket.available }} available</p>
-                      </div>
-                      <p class="font-bold text-gray-900">
-                        {{ ticket.price === 0 ? 'Free' : `$${ticket.price}` }}
-                      </p>
-                    </div>
-                  </button>
-                </div>
-                
-                <!-- Quantity -->
-                <div v-if="selectedTicket" class="mb-6">
-                  <label class="label">Quantity</label>
-                  <div class="flex items-center gap-3">
-                    <button 
-                      @click="quantity = Math.max(1, quantity - 1)"
-                      class="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                      </svg>
-                    </button>
-                    <span class="text-xl font-semibold w-12 text-center">{{ quantity }}</span>
-                    <button 
-                      @click="quantity = Math.min(selectedTicket.max_per_order || 10, selectedTicket.available, quantity + 1)"
-                      class="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-50"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                
-                <!-- Total -->
-                <div v-if="selectedTicket" class="flex justify-between items-center py-4 border-t border-gray-200 mb-6">
-                  <span class="text-gray-600">Total</span>
-                  <span class="text-2xl font-bold text-gray-900">
-                    {{ selectedTicket.price === 0 ? 'Free' : `$${(selectedTicket.price * quantity).toFixed(2)}` }}
-                  </span>
-                </div>
-                
-                <!-- Error message -->
-                <div v-if="error" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                  {{ error }}
-                </div>
-                
-                <!-- Register button -->
-                <button 
-                  @click="handleRegister"
-                  :disabled="registering || !selectedTicket"
-                  class="btn btn-primary w-full btn-lg"
-                >
-                  <LoadingSpinner v-if="registering" size="sm" color="white" class="mr-2" />
-                  {{ authStore.isAuthenticated ? 'Register Now' : 'Sign in to Register' }}
-                </button>
-              </template>
-              
-              <!-- Event stats -->
-              <div class="mt-6 pt-6 border-t border-gray-200">
-                <div class="flex items-center justify-between text-sm">
-                  <span class="text-gray-500">Attendees</span>
-                  <span class="font-medium text-gray-900">{{ event.registration_count || 0 }}</span>
-                </div>
-                <div v-if="event.average_rating" class="flex items-center justify-between text-sm mt-2">
-                  <span class="text-gray-500">Rating</span>
-                  <span class="font-medium text-gray-900 flex items-center gap-1">
-                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                    </svg>
-                    {{ event.average_rating.toFixed(1) }} ({{ event.review_count }})
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
-    
-    <!-- Registration Success Modal -->
-    <div v-if="showRegistrationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div class="absolute inset-0 bg-black/50" @click="showRegistrationModal = false"></div>
-      <div class="relative bg-white rounded-2xl p-6 max-w-md w-full">
-        <div class="text-center">
-          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
-          <p class="text-gray-600 mb-6">
-            {{ registrationSuccess?.total_amount > 0 
-              ? 'Please complete your payment to confirm your registration.' 
-              : 'Your registration has been confirmed.' 
-            }}
-          </p>
-          
-          <div v-if="registrationSuccess?.total_amount > 0" class="mb-6">
-            <p class="text-2xl font-bold text-gray-900">${{ registrationSuccess.total_amount.toFixed(2) }}</p>
-            <button @click="processPayment" :disabled="registering" class="btn btn-primary w-full mt-4">
-              <LoadingSpinner v-if="registering" size="sm" color="white" class="mr-2" />
-              Complete Payment
-            </button>
-          </div>
-          
-          <RouterLink 
-            v-else 
-            to="/dashboard/tickets" 
-            class="btn btn-primary w-full"
-          >
-            View My Tickets
-          </RouterLink>
-          
-          <button @click="showRegistrationModal = false" class="btn btn-ghost w-full mt-2">
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
+<style scoped>
+.modal-enter-active, .modal-leave-active { transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
+.modal-enter-from, .modal-leave-to { opacity: 0; transform: scale(0.95) translateY(20px); }
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>
